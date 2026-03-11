@@ -11,7 +11,6 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* Стили такие же, как в предыдущей версии */
         * {
             margin: 0;
             padding: 0;
@@ -414,7 +413,6 @@
 
         hr { border: 1px solid #eddce5; margin: 32px 0; }
 
-        /* Индикатор синхронизации */
         .sync-status {
             display: inline-block;
             width: 12px;
@@ -649,7 +647,7 @@
                     // Сохраняем локально
                     saveAllLocal();
                     
-                    // Обновляем интерфейс в зависимости от того, кто сейчас смотрит
+                    // Обновляем интерфейс
                     if (currentUser) {
                         if (currentUser.isTeacher) {
                             renderTeacherPanels();
@@ -660,6 +658,10 @@
                     lastSyncTime = Date.now();
                     setSyncStatus('online');
                     if (showAlert) alert('✅ Данные обновлены');
+                    console.log('Data loaded from cloud:', new Date().toLocaleTimeString());
+                } else {
+                    setSyncStatus('online');
+                    if (showAlert) alert('❌ Ошибка загрузки: ' + result.message);
                 }
             } catch (error) {
                 console.error('Sync error:', error);
@@ -669,7 +671,7 @@
         }
 
         async function saveToGoogle(showAlert = false) {
-            if (!currentUser || !currentUser.isTeacher) return; // Только репетитор может сохранять
+            if (!currentUser) return; // Только если пользователь авторизован
             
             try {
                 setSyncStatus('syncing');
@@ -693,9 +695,11 @@
                     lastSyncTime = Date.now();
                     setSyncStatus('online');
                     if (showAlert) alert('✅ Данные сохранены');
+                    console.log('Data saved to cloud:', new Date().toLocaleTimeString());
                 } else {
                     setSyncStatus('online');
                     if (showAlert) alert('❌ Ошибка сохранения');
+                    console.error('Save error:', result);
                 }
             } catch (error) {
                 console.error('Save error:', error);
@@ -722,8 +726,8 @@
                 clearTimeout(syncTimeout);
             }
             
-            // Если это репетитор - сохраняем в облако с задержкой
-            if (currentUser && currentUser.isTeacher) {
+            // Если пользователь авторизован - сохраняем в облако с задержкой
+            if (currentUser) {
                 syncTimeout = setTimeout(() => {
                     saveToGoogle(false);
                 }, 2000);
@@ -866,7 +870,7 @@
             dashboard.style.display = 'none';
         });
 
-        // Функции отрисовки (такие же, как в предыдущей версии)
+        // Функции отрисовки
         function renderTeacherPanels() {
             ['lessonStudentSelect', 'attachStudentSelect', 'statusStudentSelect'].forEach(function(id) {
                 let sel = document.getElementById(id);
@@ -1209,6 +1213,7 @@
             });
             document.getElementById('studentHWList').innerHTML = hwHtml || '<p style="color:#6f5a67;">Пока нет заданий</p>';
 
+            // Обработчики проверки ответов
             document.querySelectorAll('.check-btn').forEach(function(btn) {
                 btn.addEventListener('click', function(e) {
                     let hwIdx = e.target.dataset.hw;
@@ -1221,9 +1226,17 @@
                     let span = document.getElementById(`res-${hwIdx}-${qidx}`);
                     let isCorrect = !isNaN(ans) && Math.abs(ans - correct) < 0.001;
                     span.innerHTML = isCorrect ? '<span class="correct">✓ Верно</span>' : '<span class="wrong">✗ Неверно</span>';
+                    
+                    // СОХРАНЯЕМ ОТВЕТ
                     hw.userAnswers[qidx] = inp.value;
+                    
+                    // Сохраняем локально и в облако
                     saveAll();
-                    if (currentUser.isTeacher) renderResultsTable();
+                    
+                    // Обновляем таблицу результатов, если это репетитор
+                    if (currentUser && currentUser.isTeacher) {
+                        renderResultsTable();
+                    }
                 });
             });
         }
