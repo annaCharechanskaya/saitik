@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Физика | Репетитор + ученики</title>
+    <title>Физика | Репетитор + ученики (автосинхронизация)</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,6 +11,7 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
+        /* Стили такие же, как в предыдущей версии */
         * {
             margin: 0;
             padding: 0;
@@ -412,6 +413,26 @@
         }
 
         hr { border: 1px solid #eddce5; margin: 32px 0; }
+
+        /* Индикатор синхронизации */
+        .sync-status {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-left: 10px;
+            background: #4CAF50;
+            box-shadow: 0 0 5px #4CAF50;
+        }
+        .syncing {
+            background: #FFC107;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
     </style>
 </head>
 <body>
@@ -422,12 +443,18 @@
         <input type="text" id="loginName" class="login-input" placeholder="Имя" value="Репетитор">
         <input type="password" id="loginPass" class="login-input" placeholder="Пароль" value="1111">
         <button class="login-btn" id="loginBtn">Войти</button>
+        <div style="margin-top: 15px; font-size: 0.9rem; color: #666; text-align: center;">
+            <span id="syncIndicator" class="sync-status"></span> Автосинхронизация активна
+        </div>
     </div>
 
     <!-- Дашборд -->
     <div id="dashboard" class="dashboard">
         <div class="role-header">
-            <div class="role-badge"><i class="fas fa-user-circle"></i> <span id="displayName"></span></div>
+            <div class="role-badge">
+                <i class="fas fa-user-circle"></i> <span id="displayName"></span>
+                <span id="dashboardSyncIndicator" class="sync-status"></span>
+            </div>
             <button class="logout-main" id="logoutMain">Выйти</button>
         </div>
 
@@ -559,7 +586,7 @@
 
 <script>
     // ========== НАСТРОЙКИ СИНХРОНИЗАЦИИ ==========
-    const SYNC_URL = 'https://script.google.com/macros/s/AKfycbz46b8H6lCDsDFbHPJGnnmvMBjTKdegOgu3nTH0R5sI4YoBN8vTuxsin_nd9NkmupdR0w/exec';
+    const SYNC_URL = 'https://script.google.com/macros/s/AKfycbz46b8H6lCDsDFbHPJGnnmvMBjTKdegOgu3nTH0R5sI4YoBN8vTuxsin_nd9NkmupdR0w/exec'; // ← ВСТАВЬТЕ СВОЙ URL!
 
     // Глобальные функции для предпросмотра фото
     window.previewImage = function(index) {
@@ -577,7 +604,7 @@
     };
 
     (function() {
-        // Загружаем данные из localStorage при старте
+        // Данные
         let students = JSON.parse(localStorage.getItem('students')) || ['Маша', 'Иван'];
         let teacherPassword = '1111';
         let lessons = JSON.parse(localStorage.getItem('lessons')) || [];
@@ -589,49 +616,63 @@
 
         let currentUser = null;
         let syncTimeout = null;
+        let lastSyncTime = 0;
+        const SYNC_INTERVAL = 30000; // Синхронизация каждые 30 секунд
+        let autoSyncInterval = null;
+
+        // Функция обновления индикатора синхронизации
+        function setSyncStatus(status) {
+            const indicators = document.querySelectorAll('.sync-status');
+            indicators.forEach(ind => {
+                ind.className = 'sync-status';
+                if (status === 'syncing') {
+                    ind.classList.add('syncing');
+                }
+            });
+        }
 
         // ========== ФУНКЦИИ ОБЛАЧНОЙ СИНХРОНИЗАЦИИ ==========
-        window.loadFromGoogle = async function() {
+        async function loadFromGoogle(showAlert = false) {
             try {
-                const response = await fetch(`${SYNC_URL}?action=getAllData`);
+                setSyncStatus('syncing');
+                const response = await fetch(`${SYNC_URL}?action=getAllData&t=${Date.now()}`);
                 const result = await response.json();
                 
                 if (result.status === 'success') {
-                    // Преобразуем данные из облака
+                    // Обновляем данные
                     students = result.data.students.map(s => s.name);
                     lessons = result.data.lessons;
                     homeworkBlocks = result.data.homeworkBlocks;
                     attachedHW = result.data.attachedHW;
-                    studentPaidMap = result.data.studentPaidMap || {};
+                    studentPaidMap = result.data.studentPaidMap;
                     
-                    // Сохраняем в localStorage
-                    saveToLocalStorage();
+                    // Сохраняем локально
+                    saveAllLocal();
                     
-                    // Обновляем интерфейс
-                    if (currentUser && currentUser.isTeacher) {
-                        renderTeacherPanels();
+                    // Обновляем интерфейс в зависимости от того, кто сейчас смотрит
+                    if (currentUser) {
+                        if (currentUser.isTeacher) {
+                            renderTeacherPanels();
+                        }
+                        renderStudentCabinet();
                     }
-                    renderStudentCabinet();
                     
-                    alert('✅ Данные загружены из облака');
-                } else {
-                    alert('❌ Ошибка загрузки: ' + result.message);
+                    lastSyncTime = Date.now();
+                    setSyncStatus('online');
+                    if (showAlert) alert('✅ Данные обновлены');
                 }
             } catch (error) {
-                alert('❌ Ошибка соединения: ' + error);
+                console.error('Sync error:', error);
+                setSyncStatus('online');
+                if (showAlert) alert('❌ Ошибка синхронизации');
             }
-        };
+        }
 
-        window.saveToGoogle = async function() {
+        async function saveToGoogle(showAlert = false) {
+            if (!currentUser || !currentUser.isTeacher) return; // Только репетитор может сохранять
+            
             try {
-                // Показываем, что началось сохранение
-                const saveBtn = event?.target;
-                if (saveBtn) {
-                    const originalText = saveBtn.innerText;
-                    saveBtn.innerText = '⏳ Сохранение...';
-                    saveBtn.disabled = true;
-                }
-
+                setSyncStatus('syncing');
                 const data = {
                     action: 'saveAll',
                     students: students,
@@ -649,24 +690,22 @@
                 const result = await response.json();
                 
                 if (result.status === 'success') {
-                    alert('✅ Данные сохранены в облако');
+                    lastSyncTime = Date.now();
+                    setSyncStatus('online');
+                    if (showAlert) alert('✅ Данные сохранены');
                 } else {
-                    alert('❌ Ошибка сохранения: ' + result.message);
+                    setSyncStatus('online');
+                    if (showAlert) alert('❌ Ошибка сохранения');
                 }
             } catch (error) {
-                alert('❌ Ошибка соединения: ' + error);
-            } finally {
-                // Возвращаем кнопку в исходное состояние
-                const saveBtn = event?.target;
-                if (saveBtn) {
-                    saveBtn.innerText = '💾 Сохранить в облако';
-                    saveBtn.disabled = false;
-                }
+                console.error('Save error:', error);
+                setSyncStatus('online');
+                if (showAlert) alert('❌ Ошибка соединения');
             }
-        };
+        }
 
-        // Функция сохранения в localStorage
-        function saveToLocalStorage() {
+        // Локальное сохранение
+        function saveAllLocal() {
             localStorage.setItem('students', JSON.stringify(students));
             localStorage.setItem('lessons', JSON.stringify(lessons));
             localStorage.setItem('homeworkBlocks', JSON.stringify(homeworkBlocks));
@@ -674,66 +713,44 @@
             localStorage.setItem('studentPaidMap', JSON.stringify(studentPaidMap));
         }
 
-        // Функция сохранения (локально)
+        // Умное сохранение (локально + облако с задержкой)
         function saveAll() {
-            saveToLocalStorage();
+            saveAllLocal();
             
-            // Автоматически сохраняем в облако (но не чаще раза в 5 секунд)
-            if (syncTimeout) clearTimeout(syncTimeout);
-            syncTimeout = setTimeout(() => {
-                // Не показываем алерт при автосохранении
-                saveToGoogleSilent();
-                syncTimeout = null;
-            }, 5000);
-        }
-
-        // Тихая версия сохранения в облако (без алертов)
-        async function saveToGoogleSilent() {
-            try {
-                const data = {
-                    action: 'saveAll',
-                    students: students,
-                    lessons: lessons,
-                    homeworkBlocks: homeworkBlocks,
-                    attachedHW: attachedHW,
-                    studentPaidMap: studentPaidMap
-                };
-                
-                await fetch(SYNC_URL, {
-                    method: 'POST',
-                    body: JSON.stringify(data)
-                });
-            } catch (error) {
-                console.log('Ошибка автосохранения:', error);
+            // Отменяем предыдущий таймаут
+            if (syncTimeout) {
+                clearTimeout(syncTimeout);
+            }
+            
+            // Если это репетитор - сохраняем в облако с задержкой
+            if (currentUser && currentUser.isTeacher) {
+                syncTimeout = setTimeout(() => {
+                    saveToGoogle(false);
+                }, 2000);
             }
         }
 
-        // Функция добавления кнопок синхронизации
-        function addSyncButtons() {
-            const teacherPanel = document.querySelector('.teacher-panel');
-            if (!teacherPanel) return;
+        // Запуск автосинхронизации для всех пользователей
+        function startAutoSync() {
+            if (autoSyncInterval) {
+                clearInterval(autoSyncInterval);
+            }
             
-            // Проверяем, не добавлены ли уже кнопки
-            if (document.getElementById('syncButtonsAdded')) return;
+            // Первая загрузка сразу после входа
+            loadFromGoogle(false);
             
-            const syncDiv = document.createElement('div');
-            syncDiv.id = 'syncButtonsAdded';
-            syncDiv.className = 'admin-card';
-            syncDiv.style.marginTop = '20px';
-            syncDiv.innerHTML = `
-                <h3><i class="fas fa-cloud"></i> Облачная синхронизация</h3>
-                <button class="btn-admin" onclick="loadFromGoogle()" style="margin-right:10px;">
-                    <i class="fas fa-download"></i> Загрузить из облака
-                </button>
-                <button class="btn-admin" onclick="saveToGoogle(event)">
-                    <i class="fas fa-upload"></i> Сохранить в облако
-                </button>
-                <p style="margin-top:10px; font-size:0.9rem; color:#666;">
-                    Нажмите "Загрузить из облака" при первом входе на новом устройстве
-                </p>
-            `;
-            
-            teacherPanel.appendChild(syncDiv);
+            // Периодическая загрузка для всех
+            autoSyncInterval = setInterval(() => {
+                loadFromGoogle(false);
+            }, SYNC_INTERVAL);
+        }
+
+        // Остановка автосинхронизации
+        function stopAutoSync() {
+            if (autoSyncInterval) {
+                clearInterval(autoSyncInterval);
+                autoSyncInterval = null;
+            }
         }
 
         // Элементы
@@ -809,7 +826,8 @@
             });
         }
 
-        loginBtn.addEventListener('click', function() {
+        // Вход
+        loginBtn.addEventListener('click', async function() {
             const name = document.getElementById('loginName').value.trim();
             const pass = document.getElementById('loginPass').value.trim();
             if (!name) return alert('Введите имя');
@@ -828,22 +846,27 @@
             dashboard.style.display = 'block';
             displayNameSpan.innerText = currentUser.isTeacher ? 'Репетитор' : currentUser.name;
 
+            // Запускаем автосинхронизацию
+            startAutoSync();
+
             if (currentUser.isTeacher) {
                 teacherPanel.style.display = 'block';
                 renderTeacherPanels();
-                addSyncButtons(); // Добавляем кнопки синхронизации
             } else {
                 teacherPanel.style.display = 'none';
             }
             renderStudentCabinet();
         });
 
+        // Выход
         logoutBtn.addEventListener('click', function() {
+            stopAutoSync();
             currentUser = null;
             loginScreen.style.display = 'block';
             dashboard.style.display = 'none';
         });
 
+        // Функции отрисовки (такие же, как в предыдущей версии)
         function renderTeacherPanels() {
             ['lessonStudentSelect', 'attachStudentSelect', 'statusStudentSelect'].forEach(function(id) {
                 let sel = document.getElementById(id);
@@ -872,7 +895,7 @@
                     return `
                         <span class="block-chip">
                             ${b.name}
-                            <button onclick="deleteHomeworkBlock('${b.id}')" title="Удалить блок">✕</button>
+                            <button onclick="deleteHomeworkBlock('${b.id}')">✕</button>
                         </span>`;
                 }).join('');
             }
@@ -883,6 +906,7 @@
             renderAllLessonsList();
         }
 
+        // Глобальные функции для кнопок
         window.deleteHomeworkBlock = function(blockId) {
             if (confirm('Удалить этот блок ДЗ?')) {
                 homeworkBlocks = homeworkBlocks.filter(function(b) { return b.id !== blockId; });
@@ -903,12 +927,38 @@
         };
 
         window.deleteAttachedHW = function(attachedIndex) {
-            if (confirm('Удалить это домашнее задание у ученика?')) {
+            if (confirm('Удалить это ДЗ у ученика?')) {
                 attachedHW.splice(attachedIndex, 1);
                 saveAll();
                 renderTeacherPanels();
                 renderStudentCabinet();
             }
+        };
+
+        window.removeStudent = function(name) {
+            if (confirm('Удалить ученика?')) {
+                students = students.filter(function(s) { return s !== name; });
+                delete studentPaidMap[name];
+                lessons = lessons.filter(function(l) { return l.studentName !== name; });
+                attachedHW = attachedHW.filter(function(a) { return a.studentName !== name; });
+                saveAll(); 
+                renderTeacherPanels();
+            }
+        };
+
+        window.updatePaid = function(student) {
+            let inp = document.getElementById(`paid_${student}`);
+            let val = parseInt(inp.value) || 0;
+            studentPaidMap[student] = val;
+            saveAll();
+            let past = lessons.filter(function(l) { return l.studentName === student && l.status === 'прошло'; }).length;
+            let remSpan = document.getElementById(`rem_${student}`);
+            if (remSpan) remSpan.innerText = Math.max(0, val - past);
+        };
+
+        window.changeLessonStatus = function(id, status) {
+            let lesson = lessons.find(function(l) { return l.id == id; });
+            if (lesson) { lesson.status = status; saveAll(); renderTeacherPanels(); renderStudentCabinet(); }
         };
 
         function renderResultsTable() {
@@ -971,27 +1021,6 @@
             }).join('');
         }
 
-        window.changeLessonStatus = function(id, status) {
-            let lesson = lessons.find(function(l) { return l.id == id; });
-            if (lesson) { lesson.status = status; saveAll(); renderTeacherPanels(); renderStudentCabinet(); }
-        };
-
-        let statusStudentSelect = document.getElementById('statusStudentSelect');
-        if (statusStudentSelect) {
-            statusStudentSelect.addEventListener('change', updateLessonSelectForStatus);
-        }
-
-        let applyStatusBtn = document.getElementById('applyStatusBtn');
-        if (applyStatusBtn) {
-            applyStatusBtn.addEventListener('click', function() {
-                let student = document.getElementById('statusStudentSelect').value;
-                let lessonId = document.getElementById('statusLessonSelect').value;
-                let status = document.getElementById('newStatusSelect').value;
-                let lesson = lessons.find(function(l) { return l.id == lessonId && l.studentName === student; });
-                if (lesson) { lesson.status = status; saveAll(); renderTeacherPanels(); renderStudentCabinet(); alert('Статус обновлён'); }
-            });
-        }
-
         function renderPaymentTable() {
             let container = document.getElementById('paymentRowsContainer');
             if (!container) return;
@@ -1010,26 +1039,22 @@
             }).join('');
         }
 
-        window.updatePaid = function(student) {
-            let inp = document.getElementById(`paid_${student}`);
-            let val = parseInt(inp.value) || 0;
-            studentPaidMap[student] = val;
-            saveAll();
-            let past = lessons.filter(function(l) { return l.studentName === student && l.status === 'прошло'; }).length;
-            let remSpan = document.getElementById(`rem_${student}`);
-            if (remSpan) remSpan.innerText = Math.max(0, val - past);
-        };
+        // Обработчики кнопок
+        let statusStudentSelect = document.getElementById('statusStudentSelect');
+        if (statusStudentSelect) {
+            statusStudentSelect.addEventListener('change', updateLessonSelectForStatus);
+        }
 
-        window.removeStudent = function(name) {
-            if (confirm('Удалить ученика?')) {
-                students = students.filter(function(s) { return s !== name; });
-                delete studentPaidMap[name];
-                lessons = lessons.filter(function(l) { return l.studentName !== name; });
-                attachedHW = attachedHW.filter(function(a) { return a.studentName !== name; });
-                saveAll(); 
-                renderTeacherPanels();
-            }
-        };
+        let applyStatusBtn = document.getElementById('applyStatusBtn');
+        if (applyStatusBtn) {
+            applyStatusBtn.addEventListener('click', function() {
+                let student = document.getElementById('statusStudentSelect').value;
+                let lessonId = document.getElementById('statusLessonSelect').value;
+                let status = document.getElementById('newStatusSelect').value;
+                let lesson = lessons.find(function(l) { return l.id == lessonId && l.studentName === student; });
+                if (lesson) { lesson.status = status; saveAll(); renderTeacherPanels(); renderStudentCabinet(); alert('Статус обновлён'); }
+            });
+        }
 
         let addStudentBtn = document.getElementById('addStudentBtn');
         if (addStudentBtn) {
@@ -1103,7 +1128,7 @@
                     homeworkBlocks.push({ id: 'b' + Date.now(), name: name, questions: qs }); 
                     saveAll(); 
                     renderTeacherPanels(); 
-                    alert('Блок сохранён с фото');
+                    alert('Блок сохранён');
                 } else {
                     alert('Заполните название и хотя бы один вопрос');
                 }
@@ -1198,12 +1223,18 @@
                     span.innerHTML = isCorrect ? '<span class="correct">✓ Верно</span>' : '<span class="wrong">✗ Неверно</span>';
                     hw.userAnswers[qidx] = inp.value;
                     saveAll();
-                    if (currentUser && currentUser.isTeacher) renderResultsTable();
+                    if (currentUser.isTeacher) renderResultsTable();
                 });
             });
         }
 
+        // Делаем функции доступными глобально
         window.renderStudentCabinet = renderStudentCabinet;
+        window.loadFromGoogle = loadFromGoogle;
+        window.saveToGoogle = saveToGoogle;
+        
+        // Инициализация
+        saveAllLocal();
     })();
 </script>
 </body>
