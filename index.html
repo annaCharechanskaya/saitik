@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Физика | Репетитор + ученики (облачная версия)</title>
+    <title>Физика | Репетитор + ученики</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -37,13 +37,11 @@
             padding: 32px;
         }
 
-        /* адаптация для телефонов */
         @media (max-width: 768px) {
             body { padding: 12px; }
             .app-container { padding: 20px; border-radius: 32px; }
         }
 
-        /* экран входа */
         .login-screen {
             max-width: 440px;
             margin: 40px auto;
@@ -83,7 +81,6 @@
 
         .dashboard { display: none; }
 
-        /* шапка */
         .role-header {
             display: flex;
             justify-content: space-between;
@@ -111,7 +108,6 @@
         }
         .logout-main:hover { background: #f3e9ef; }
 
-        /* вкладки */
         .tabs, .student-tabs {
             display: flex;
             gap: 8px;
@@ -137,7 +133,6 @@
         .tab-content, .student-tab-content { display: none; }
         .tab-content.active, .student-tab-content.active { display: block; }
 
-        /* карточки статистики */
         .stats-row {
             display: flex;
             gap: 20px;
@@ -163,7 +158,6 @@
             color: #2c1f27;
         }
 
-        /* админка */
         .teacher-panel {
             background: #ffffff;
             border-radius: 48px;
@@ -213,7 +207,6 @@
         }
         .btn-admin:hover { background: #6d4b5d; }
 
-        /* фото-загрузка */
         .image-upload-wrapper {
             background: #fdf3f7;
             border-radius: 30px;
@@ -235,7 +228,6 @@
             border: none;
         }
 
-        /* список учеников */
         .student-list {
             max-height: 260px;
             overflow-y: auto;
@@ -250,7 +242,6 @@
             border: 1px solid #e6d2dd;
         }
 
-        /* уроки в админке */
         .lesson-admin-item {
             background: #fcf3f8;
             border-radius: 60px;
@@ -271,7 +262,6 @@
             cursor: pointer;
         }
 
-        /* таблица оплат */
         .payment-table {
             background: #fdfafb;
             border-radius: 40px;
@@ -295,7 +285,6 @@
             border: 1.5px solid #e2c9d6;
         }
 
-        /* кабинет ученика */
         .student-dash {
             background: #ffffff;
             border-radius: 48px;
@@ -330,7 +319,6 @@
             font-weight: 600;
         }
 
-        /* ДЗ */
         .hw-attached { margin-top: 24px; }
         .hw-question-block {
             background: #fdf6fa;
@@ -364,7 +352,6 @@
         .correct { color: #6d4b5d; font-weight: 700; }
         .wrong { color: #a54848; font-weight: 700; }
 
-        /* кнопка удалить ДЗ у ученика */
         .delete-hw-btn {
             position: absolute;
             top: 20px;
@@ -377,7 +364,6 @@
             cursor: pointer;
         }
 
-        /* таблица результатов */
         .results-table {
             background: #fdfafb;
             border-radius: 40px;
@@ -411,7 +397,6 @@
             cursor: pointer;
         }
 
-        /* адаптация для телефона */
         @media (max-width: 768px) {
             .payment-row, .result-row, .lesson-row {
                 grid-template-columns: 1fr;
@@ -592,6 +577,7 @@
     };
 
     (function() {
+        // Загружаем данные из localStorage при старте
         let students = JSON.parse(localStorage.getItem('students')) || ['Маша', 'Иван'];
         let teacherPassword = '1111';
         let lessons = JSON.parse(localStorage.getItem('lessons')) || [];
@@ -611,15 +597,22 @@
                 const result = await response.json();
                 
                 if (result.status === 'success') {
+                    // Преобразуем данные из облака
                     students = result.data.students.map(s => s.name);
                     lessons = result.data.lessons;
                     homeworkBlocks = result.data.homeworkBlocks;
                     attachedHW = result.data.attachedHW;
-                    studentPaidMap = result.data.studentPaidMap;
+                    studentPaidMap = result.data.studentPaidMap || {};
                     
-                    saveAll();
-                    if (currentUser && currentUser.isTeacher) renderTeacherPanels();
+                    // Сохраняем в localStorage
+                    saveToLocalStorage();
+                    
+                    // Обновляем интерфейс
+                    if (currentUser && currentUser.isTeacher) {
+                        renderTeacherPanels();
+                    }
                     renderStudentCabinet();
+                    
                     alert('✅ Данные загружены из облака');
                 } else {
                     alert('❌ Ошибка загрузки: ' + result.message);
@@ -631,6 +624,14 @@
 
         window.saveToGoogle = async function() {
             try {
+                // Показываем, что началось сохранение
+                const saveBtn = event?.target;
+                if (saveBtn) {
+                    const originalText = saveBtn.innerText;
+                    saveBtn.innerText = '⏳ Сохранение...';
+                    saveBtn.disabled = true;
+                }
+
                 const data = {
                     action: 'saveAll',
                     students: students,
@@ -654,23 +655,57 @@
                 }
             } catch (error) {
                 alert('❌ Ошибка соединения: ' + error);
+            } finally {
+                // Возвращаем кнопку в исходное состояние
+                const saveBtn = event?.target;
+                if (saveBtn) {
+                    saveBtn.innerText = '💾 Сохранить в облако';
+                    saveBtn.disabled = false;
+                }
             }
         };
 
-        // Функция сохранения (локально + облако с задержкой)
-        function saveAll() {
+        // Функция сохранения в localStorage
+        function saveToLocalStorage() {
             localStorage.setItem('students', JSON.stringify(students));
             localStorage.setItem('lessons', JSON.stringify(lessons));
             localStorage.setItem('homeworkBlocks', JSON.stringify(homeworkBlocks));
             localStorage.setItem('attachedHW', JSON.stringify(attachedHW));
             localStorage.setItem('studentPaidMap', JSON.stringify(studentPaidMap));
+        }
+
+        // Функция сохранения (локально)
+        function saveAll() {
+            saveToLocalStorage();
             
             // Автоматически сохраняем в облако (но не чаще раза в 5 секунд)
             if (syncTimeout) clearTimeout(syncTimeout);
             syncTimeout = setTimeout(() => {
-                saveToGoogle();
+                // Не показываем алерт при автосохранении
+                saveToGoogleSilent();
                 syncTimeout = null;
             }, 5000);
+        }
+
+        // Тихая версия сохранения в облако (без алертов)
+        async function saveToGoogleSilent() {
+            try {
+                const data = {
+                    action: 'saveAll',
+                    students: students,
+                    lessons: lessons,
+                    homeworkBlocks: homeworkBlocks,
+                    attachedHW: attachedHW,
+                    studentPaidMap: studentPaidMap
+                };
+                
+                await fetch(SYNC_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(data)
+                });
+            } catch (error) {
+                console.log('Ошибка автосохранения:', error);
+            }
         }
 
         // Функция добавления кнопок синхронизации
@@ -690,25 +725,16 @@
                 <button class="btn-admin" onclick="loadFromGoogle()" style="margin-right:10px;">
                     <i class="fas fa-download"></i> Загрузить из облака
                 </button>
-                <button class="btn-admin" onclick="saveToGoogle()">
+                <button class="btn-admin" onclick="saveToGoogle(event)">
                     <i class="fas fa-upload"></i> Сохранить в облако
                 </button>
                 <p style="margin-top:10px; font-size:0.9rem; color:#666;">
-                    После изменений нажимайте "Сохранить в облако", чтобы данные появились на других устройствах
+                    Нажмите "Загрузить из облака" при первом входе на новом устройстве
                 </p>
             `;
             
             teacherPanel.appendChild(syncDiv);
         }
-
-        // Сохраняем оригинальную функцию renderTeacherPanels
-        const originalRenderTeacherPanels = window.renderTeacherPanels;
-        
-        // Переопределяем функцию renderTeacherPanels
-        window.renderTeacherPanels = function() {
-            if (originalRenderTeacherPanels) originalRenderTeacherPanels();
-            addSyncButtons();
-        };
 
         // Элементы
         const loginScreen = document.getElementById('loginScreen');
@@ -804,7 +830,8 @@
 
             if (currentUser.isTeacher) {
                 teacherPanel.style.display = 'block';
-                if (window.renderTeacherPanels) window.renderTeacherPanels();
+                renderTeacherPanels();
+                addSyncButtons(); // Добавляем кнопки синхронизации
             } else {
                 teacherPanel.style.display = 'none';
             }
@@ -856,10 +883,8 @@
             renderAllLessonsList();
         }
 
-        window.renderTeacherPanels = renderTeacherPanels;
-
         window.deleteHomeworkBlock = function(blockId) {
-            if (confirm('Удалить этот блок ДЗ? Это действие необратимо.')) {
+            if (confirm('Удалить этот блок ДЗ?')) {
                 homeworkBlocks = homeworkBlocks.filter(function(b) { return b.id !== blockId; });
                 attachedHW = attachedHW.filter(function(a) { return a.blockId !== blockId; });
                 saveAll();
@@ -1179,9 +1204,6 @@
         }
 
         window.renderStudentCabinet = renderStudentCabinet;
-        
-        // Сохраняем начальные данные
-        saveAll();
     })();
 </script>
 </body>
