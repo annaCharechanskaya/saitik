@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Физика | Репетитор + ученики (стабильная версия)</title>
+    <title>Физика | Репетитор + ученики (облачная версия)</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -37,15 +37,10 @@
             padding: 32px;
         }
 
-        /* адаптация для телефонов - мягкая, без поломок */
+        /* адаптация для телефонов */
         @media (max-width: 768px) {
-            body {
-                padding: 12px;
-            }
-            .app-container {
-                padding: 20px;
-                border-radius: 32px;
-            }
+            body { padding: 12px; }
+            .app-container { padding: 20px; border-radius: 32px; }
         }
 
         /* экран входа */
@@ -63,9 +58,6 @@
             font-weight: 600;
             color: #9d6b81;
             margin-bottom: 32px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
         }
         .login-input {
             width: 100%;
@@ -75,11 +67,6 @@
             font-size: 1rem;
             margin-bottom: 20px;
             outline: none;
-            transition: 0.2s;
-        }
-        .login-input:focus {
-            border-color: #c28b9b;
-            box-shadow: 0 0 0 3px #fae2ec;
         }
         .login-btn {
             background: #8b6479;
@@ -91,15 +78,10 @@
             font-weight: 600;
             font-size: 1.1rem;
             cursor: pointer;
-            transition: 0.15s;
         }
-        .login-btn:hover {
-            background: #6d4b5d;
-        }
+        .login-btn:hover { background: #6d4b5d; }
 
-        .dashboard {
-            display: none;
-        }
+        .dashboard { display: none; }
 
         /* шапка */
         .role-header {
@@ -127,11 +109,9 @@
             cursor: pointer;
             color: #4b3f46;
         }
-        .logout-main:hover {
-            background: #f3e9ef;
-        }
+        .logout-main:hover { background: #f3e9ef; }
 
-        /* вкладки для репетитора и ученика */
+        /* вкладки */
         .tabs, .student-tabs {
             display: flex;
             gap: 8px;
@@ -149,18 +129,13 @@
             color: #6d4b5d;
             border-radius: 60px 60px 0 0;
             cursor: pointer;
-            transition: 0.15s;
         }
         .tab.active, .student-tab.active {
             background: #f4e6ed;
             color: #4f2e41;
         }
-        .tab-content, .student-tab-content {
-            display: none;
-        }
-        .tab-content.active, .student-tab-content.active {
-            display: block;
-        }
+        .tab-content, .student-tab-content { display: none; }
+        .tab-content.active, .student-tab-content.active { display: block; }
 
         /* карточки статистики */
         .stats-row {
@@ -175,7 +150,6 @@
             padding: 24px 30px;
             flex: 1 1 200px;
             border: 1px solid #e9dde3;
-            box-shadow: 0 4px 12px #f0e4ea;
         }
         .stat-card .stat-title {
             font-size: 1rem;
@@ -214,7 +188,6 @@
             border-radius: 40px;
             padding: 28px;
             border: 1px solid #eedce5;
-            box-shadow: 0 4px 12px #f3e4eb;
         }
         .admin-card h3 {
             font-size: 1.3rem;
@@ -227,7 +200,6 @@
             border: 1.5px solid #eedce5;
             border-radius: 60px;
             margin: 8px 0 16px;
-            background: white;
         }
         .btn-admin {
             background: #8b6479;
@@ -238,16 +210,8 @@
             font-weight: 600;
             cursor: pointer;
             margin-right: 8px;
-            transition: 0.15s;
-            border: 1px solid #bc9aaf;
         }
-        .btn-admin:hover {
-            background: #6d4b5d;
-        }
-        .btn-warn {
-            background: #e2cfd9;
-            color: #402f38;
-        }
+        .btn-admin:hover { background: #6d4b5d; }
 
         /* фото-загрузка */
         .image-upload-wrapper {
@@ -262,8 +226,6 @@
             max-height: 200px;
             border-radius: 24px;
             margin: 12px 0;
-            border: 2px solid white;
-            box-shadow: 0 4px 10px #ddc0cd;
         }
         .file-input {
             background: #f4e7ed;
@@ -271,7 +233,6 @@
             padding: 10px 16px;
             width: 100%;
             border: none;
-            margin: 8px 0;
         }
 
         /* список учеников */
@@ -301,12 +262,6 @@
             gap: 16px;
             border: 1px solid #e6d2dd;
         }
-        .lesson-admin-item select {
-            padding: 8px 18px;
-            border-radius: 40px;
-            border: 1.5px solid #dbb9cb;
-            background: white;
-        }
         .delete-lesson-btn {
             background: #e2cfd9;
             border: none;
@@ -314,7 +269,6 @@
             padding: 8px 16px;
             border-radius: 40px;
             cursor: pointer;
-            font-weight: 600;
         }
 
         /* таблица оплат */
@@ -333,10 +287,7 @@
             padding: 16px 0;
             border-bottom: 1px solid #edd0dd;
         }
-        .payment-header {
-            font-weight: 700;
-            color: #6d4b5d;
-        }
+        .payment-header { font-weight: 700; color: #6d4b5d; }
         .paid-input {
             width: 100px;
             padding: 10px 14px;
@@ -377,13 +328,10 @@
             text-decoration: none;
             color: #7b5570;
             font-weight: 600;
-            display: inline-block;
         }
 
-        /* ДЗ с картинками */
-        .hw-attached {
-            margin-top: 24px;
-        }
+        /* ДЗ */
+        .hw-attached { margin-top: 24px; }
         .hw-question-block {
             background: #fdf6fa;
             border-radius: 40px;
@@ -397,9 +345,6 @@
             max-height: 250px;
             border-radius: 32px;
             margin: 16px 0;
-            border: 3px solid white;
-            box-shadow: 0 4px 14px #ddc0cf;
-            object-fit: cover;
         }
         .answer-input {
             padding: 14px 22px;
@@ -414,7 +359,6 @@
             border: none;
             padding: 14px 28px;
             border-radius: 60px;
-            font-weight: 600;
             cursor: pointer;
         }
         .correct { color: #6d4b5d; font-weight: 700; }
@@ -428,11 +372,9 @@
             background: #f1d7e2;
             border: none;
             color: #8b4b6b;
-            font-size: 1.2rem;
-            cursor: pointer;
             padding: 8px 16px;
             border-radius: 40px;
-            font-weight: 600;
+            cursor: pointer;
         }
 
         /* таблица результатов */
@@ -451,10 +393,7 @@
             padding: 16px 0;
             border-bottom: 1px solid #edd0dd;
         }
-        .result-header {
-            font-weight: 700;
-            color: #6d4b5d;
-        }
+        .result-header { font-weight: 700; color: #6d4b5d; }
         .block-chip {
             background: #f2e6ed;
             border-radius: 40px;
@@ -470,79 +409,21 @@
             color: #9f597b;
             font-size: 1.2rem;
             cursor: pointer;
-            padding: 0 6px;
         }
 
-        /* адаптация для телефона - аккуратная */
+        /* адаптация для телефона */
         @media (max-width: 768px) {
-            .tabs, .student-tabs {
-                gap: 4px;
-            }
-            .tab, .student-tab {
-                padding: 8px 16px;
-                font-size: 0.9rem;
-            }
-            .stats-row {
-                gap: 12px;
-            }
-            .stat-card {
-                padding: 16px 20px;
-            }
-            .stat-card .stat-value {
-                font-size: 2rem;
-            }
-            .grid-2 {
-                grid-template-columns: 1fr;
-            }
-            .payment-row {
-                grid-template-columns: 1fr;
-                gap: 8px;
-                border: 1px solid #edd0dd;
-                border-radius: 20px;
-                padding: 16px;
-                margin-bottom: 12px;
-            }
-            .payment-header {
-                display: none;
-            }
-            .result-row {
+            .payment-row, .result-row, .lesson-row {
                 grid-template-columns: 1fr;
                 border: 1px solid #edd0dd;
                 border-radius: 20px;
                 padding: 16px;
                 margin-bottom: 12px;
             }
-            .result-header {
-                display: none;
-            }
-            .lesson-row {
-                grid-template-columns: 1fr;
-                gap: 8px;
-                border: 1px solid #edd0dd;
-                border-radius: 20px;
-                margin-bottom: 12px;
-                padding: 16px;
-            }
-            .lesson-header {
-                display: none;
-            }
-            .lesson-admin-item {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            .answer-input {
-                width: 100%;
-                margin-right: 0;
-                margin-bottom: 10px;
-            }
-            .check-btn {
-                width: 100%;
-            }
-            .delete-hw-btn {
-                position: static;
-                margin-bottom: 16px;
-                display: inline-block;
-            }
+            .payment-header, .result-header, .lesson-header { display: none; }
+            .answer-input { width: 100%; margin-bottom: 10px; }
+            .check-btn { width: 100%; }
+            .delete-hw-btn { position: static; margin-bottom: 16px; display: inline-block; }
         }
 
         hr { border: 1px solid #eddce5; margin: 32px 0; }
@@ -561,7 +442,7 @@
     <!-- Дашборд -->
     <div id="dashboard" class="dashboard">
         <div class="role-header">
-            <div class="role-badge"><i class="fas fa-user-circle" style="color:#9d6b81;"></i> <span id="displayName"></span></div>
+            <div class="role-badge"><i class="fas fa-user-circle"></i> <span id="displayName"></span></div>
             <button class="logout-main" id="logoutMain">Выйти</button>
         </div>
 
@@ -626,15 +507,13 @@
                             <h3><i class="fas fa-layer-group"></i> Создать блок ДЗ (с фото)</h3>
                             <input type="text" id="hwBlockName" class="input-field" placeholder="Название блока" value="Колебания">
                             <div id="dynamicQuestions">
-                                <div class="image-upload-wrapper" id="qBlock0">
+                                <div class="image-upload-wrapper">
                                     <input type="text" placeholder="Текст вопроса" class="input-field" id="qText0" value="Чему равна частота?">
                                     <input type="number" placeholder="Числовой ответ" class="input-field" id="qAns0" value="12.5">
-                                    <div class="image-upload-wrapper">
-                                        <label>📷 Загрузить фото:</label>
-                                        <input type="file" accept="image/*" class="file-input" id="file0" onchange="previewImage(0)">
-                                        <input type="hidden" id="qImg0" value="">
-                                        <div id="preview0"></div>
-                                    </div>
+                                    <label>📷 Загрузить фото:</label>
+                                    <input type="file" accept="image/*" class="file-input" id="file0" onchange="previewImage(0)">
+                                    <input type="hidden" id="qImg0" value="">
+                                    <div id="preview0"></div>
                                 </div>
                             </div>
                             <button class="btn-admin" id="addQuestionFieldBtn">➕ Добавить вопрос с фото</button>
@@ -648,14 +527,14 @@
                         </div>
                     </div>
                     <hr>
-                    <h3 style="color:#6d4b5d;">📚 Готовые блоки (нажмите ✕ чтобы удалить навсегда)</h3>
+                    <h3 style="color:#6d4b5d;">📚 Готовые блоки</h3>
                     <div id="adminHWBlockList" style="display: flex; flex-wrap: wrap; gap: 12px; margin-top:16px;"></div>
                 </div>
 
                 <!-- Результаты -->
                 <div id="tabResultsContent" class="tab-content">
                     <div class="results-table">
-                        <h3 style="margin-bottom:20px; color:#6d4b5d;"><i class="fas fa-clipboard-check"></i> Результаты домашних заданий</h3>
+                        <h3 style="margin-bottom:20px; color:#6d4b5d;"><i class="fas fa-clipboard-check"></i> Результаты</h3>
                         <div class="result-row result-header">
                             <div>Ученик</div><div>Блок</div><div>Вопрос</div><div>Ответ</div><div>Статус</div>
                         </div>
@@ -694,6 +573,9 @@
 </div>
 
 <script>
+    // ========== НАСТРОЙКИ СИНХРОНИЗАЦИИ ==========
+    const SYNC_URL = 'https://script.google.com/macros/s/AKfycbz46b8H6lCDsDFbHPJGnnmvMBjTKdegOgu3nTH0R5sI4YoBN8vTuxsin_nd9NkmupdR0w/exec';
+
     // Глобальные функции для предпросмотра фото
     window.previewImage = function(index) {
         const fileInput = document.getElementById('file' + index);
@@ -720,14 +602,113 @@
         let studentPaidMap = JSON.parse(localStorage.getItem('studentPaidMap')) || {};
 
         let currentUser = null;
+        let syncTimeout = null;
 
+        // ========== ФУНКЦИИ ОБЛАЧНОЙ СИНХРОНИЗАЦИИ ==========
+        window.loadFromGoogle = async function() {
+            try {
+                const response = await fetch(`${SYNC_URL}?action=getAllData`);
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    students = result.data.students.map(s => s.name);
+                    lessons = result.data.lessons;
+                    homeworkBlocks = result.data.homeworkBlocks;
+                    attachedHW = result.data.attachedHW;
+                    studentPaidMap = result.data.studentPaidMap;
+                    
+                    saveAll();
+                    if (currentUser && currentUser.isTeacher) renderTeacherPanels();
+                    renderStudentCabinet();
+                    alert('✅ Данные загружены из облака');
+                } else {
+                    alert('❌ Ошибка загрузки: ' + result.message);
+                }
+            } catch (error) {
+                alert('❌ Ошибка соединения: ' + error);
+            }
+        };
+
+        window.saveToGoogle = async function() {
+            try {
+                const data = {
+                    action: 'saveAll',
+                    students: students,
+                    lessons: lessons,
+                    homeworkBlocks: homeworkBlocks,
+                    attachedHW: attachedHW,
+                    studentPaidMap: studentPaidMap
+                };
+                
+                const response = await fetch(SYNC_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    alert('✅ Данные сохранены в облако');
+                } else {
+                    alert('❌ Ошибка сохранения: ' + result.message);
+                }
+            } catch (error) {
+                alert('❌ Ошибка соединения: ' + error);
+            }
+        };
+
+        // Функция сохранения (локально + облако с задержкой)
         function saveAll() {
             localStorage.setItem('students', JSON.stringify(students));
             localStorage.setItem('lessons', JSON.stringify(lessons));
             localStorage.setItem('homeworkBlocks', JSON.stringify(homeworkBlocks));
             localStorage.setItem('attachedHW', JSON.stringify(attachedHW));
             localStorage.setItem('studentPaidMap', JSON.stringify(studentPaidMap));
+            
+            // Автоматически сохраняем в облако (но не чаще раза в 5 секунд)
+            if (syncTimeout) clearTimeout(syncTimeout);
+            syncTimeout = setTimeout(() => {
+                saveToGoogle();
+                syncTimeout = null;
+            }, 5000);
         }
+
+        // Функция добавления кнопок синхронизации
+        function addSyncButtons() {
+            const teacherPanel = document.querySelector('.teacher-panel');
+            if (!teacherPanel) return;
+            
+            // Проверяем, не добавлены ли уже кнопки
+            if (document.getElementById('syncButtonsAdded')) return;
+            
+            const syncDiv = document.createElement('div');
+            syncDiv.id = 'syncButtonsAdded';
+            syncDiv.className = 'admin-card';
+            syncDiv.style.marginTop = '20px';
+            syncDiv.innerHTML = `
+                <h3><i class="fas fa-cloud"></i> Облачная синхронизация</h3>
+                <button class="btn-admin" onclick="loadFromGoogle()" style="margin-right:10px;">
+                    <i class="fas fa-download"></i> Загрузить из облака
+                </button>
+                <button class="btn-admin" onclick="saveToGoogle()">
+                    <i class="fas fa-upload"></i> Сохранить в облако
+                </button>
+                <p style="margin-top:10px; font-size:0.9rem; color:#666;">
+                    После изменений нажимайте "Сохранить в облако", чтобы данные появились на других устройствах
+                </p>
+            `;
+            
+            teacherPanel.appendChild(syncDiv);
+        }
+
+        // Сохраняем оригинальную функцию renderTeacherPanels
+        const originalRenderTeacherPanels = window.renderTeacherPanels;
+        
+        // Переопределяем функцию renderTeacherPanels
+        window.renderTeacherPanels = function() {
+            if (originalRenderTeacherPanels) originalRenderTeacherPanels();
+            addSyncButtons();
+        };
 
         // Элементы
         const loginScreen = document.getElementById('loginScreen');
@@ -823,7 +804,7 @@
 
             if (currentUser.isTeacher) {
                 teacherPanel.style.display = 'block';
-                renderTeacherPanels();
+                if (window.renderTeacherPanels) window.renderTeacherPanels();
             } else {
                 teacherPanel.style.display = 'none';
             }
@@ -874,6 +855,8 @@
             updateLessonSelectForStatus();
             renderAllLessonsList();
         }
+
+        window.renderTeacherPanels = renderTeacherPanels;
 
         window.deleteHomeworkBlock = function(blockId) {
             if (confirm('Удалить этот блок ДЗ? Это действие необратимо.')) {
@@ -1190,12 +1173,14 @@
                     span.innerHTML = isCorrect ? '<span class="correct">✓ Верно</span>' : '<span class="wrong">✗ Неверно</span>';
                     hw.userAnswers[qidx] = inp.value;
                     saveAll();
-                    if (currentUser.isTeacher) renderResultsTable();
+                    if (currentUser && currentUser.isTeacher) renderResultsTable();
                 });
             });
         }
 
         window.renderStudentCabinet = renderStudentCabinet;
+        
+        // Сохраняем начальные данные
         saveAll();
     })();
 </script>
